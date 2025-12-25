@@ -1,0 +1,28 @@
+## [Visual Studio 暫存與編譯產出]
+bin/
+obj/
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+
+## [發佈輸出資料夾]
+# 如果你的發佈資料夾名稱是 Ans 或 publish，請加入屏蔽
+Ans/
+publish/
+others/
+
+## [外部工具與執行檔]
+# 這些工具建議由使用者自行下載或放在 Release 區，不建議進程式碼庫
+yt-dlp.exe
+ffmpeg.exe
+ffprobe.exe
+
+## [執行期間產生的資料]
+# 屏蔽自動產生的歌單資料夾與暫存音檔
+temp.mp3
+
+## [作業系統暫存]
+Thumbs.db
+Desktop.ini
+.DS_Store
