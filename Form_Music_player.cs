@@ -6,15 +6,15 @@ namespace LifeHelper
 {
     public partial class Form_Music_player : Form
     {
-        
+
         private IWavePlayer waveOut;
         private MediaFoundationReader audioReader;
         private string streamUrl;
         private bool isPlaying = false;
-        private System.Windows.Forms.Timer playbackTimer = new System.Windows.Forms.Timer();
+
         private bool isDragging = false;
         private int dragValue = 0;
-        private bool isClosingManually = false; 
+        private bool isClosingManually = false;
 
         private int retryCount = 0;
         private const int maxRetry = 3;
@@ -42,10 +42,10 @@ namespace LifeHelper
 
         public async void SetMusicInfo(SongInfo info)
         {
-            isPlaying = false; 
-            CleanupPlayback(); 
+            isPlaying = false;
+            CleanupPlayback();
 
-            string cleanedTitle = CleanTitle(info.Title, info.CoverUrl);
+            string cleanedTitle = CleanTitle(info.Title, info.Artist); // 修正原本傳入 info.CoverUrl 的小 Bug
             lblTitle.Text = GetTwoLineEllipsis(cleanedTitle, lblTitle.Font, lblTitle.Width);
             lblArtist.Text = info.Artist;
             timeLabel.Text = $"0:00/{info.Duration}";
@@ -53,22 +53,88 @@ namespace LifeHelper
 
             try
             {
-                System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient();
-               
-                byte[] imageBytes = await httpClient.GetByteArrayAsync(info.CoverUrl);
-                using (var ms = new System.IO.MemoryStream(imageBytes))
+                using (System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient())
                 {
-                    
-                    pictureBoxCover.Image?.Dispose();
-                    pictureBoxCover.Image = Image.FromStream(ms);
+                    byte[] imageBytes = await httpClient.GetByteArrayAsync(info.CoverUrl);
+                    using (var ms = new System.IO.MemoryStream(imageBytes))
+                    {
+                        using (Image originalImage = Image.FromStream(ms))
+                        {
+                            // 執行美化加工：圓角處理
+                            Image roundedImage = CreateRoundedImage(originalImage, 20); // 20 為圓角半徑
+
+                            // 釋放舊圖並更新
+                            pictureBoxCover.Image?.Dispose();
+                            pictureBoxCover.Image = roundedImage;
+                        }
+                    }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Debug.WriteLine($"[Image Error] {ex.Message}");
                 pictureBoxCover.Image = null;
             }
 
             PlayMusic();
+        }
+
+        /// <summary>
+        /// 產生圓角圖片的工具方法 (GDI+)
+        /// </summary>
+        private Image CreateRoundedImage(Image image, int cornerRadius)
+        {
+            // 建立畫布
+            Bitmap result = new Bitmap(image.Width, image.Height);
+            result.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+
+            using (Graphics g = Graphics.FromImage(result))
+            {
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+                g.Clear(Color.Transparent);
+
+                // --- 定義路徑 ---
+                using (System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath())
+                {
+                    int arcSize = cornerRadius * 2;
+                    path.AddArc(0, 0, arcSize, arcSize, 180, 90);
+                    path.AddArc(image.Width - arcSize, 0, arcSize, arcSize, 270, 90);
+                    path.AddArc(image.Width - arcSize, image.Height - arcSize, arcSize, arcSize, 0, 90);
+                    path.AddArc(0, image.Height - arcSize, arcSize, arcSize, 90, 90);
+                    path.CloseAllFigures();
+
+                    // 1. 裁切並繪製圖片
+                    g.SetClip(path);
+                    g.DrawImage(image, 0, 0, image.Width, image.Height);
+                    g.ResetClip();
+
+                    // 2. [強化點] 繪製明顯的外圈邊框 (模擬專輯封面的厚紙板感)
+                    // 使用較亮的灰色，寬度設為 3px
+                    using (Pen borderPen = new Pen(Color.FromArgb(80, 80, 80), 3))
+                    {
+                        // 將畫筆對齊方式設為向內，這樣邊框才不會被切掉
+                        borderPen.Alignment = System.Drawing.Drawing2D.PenAlignment.Inset;
+                        g.DrawPath(borderPen, path);
+                    }
+
+                    // 3. [強化點] 最內層的高光細線 (增加精緻質感)
+                    using (Pen highlightPen = new Pen(Color.FromArgb(120, 255, 255, 255), 1))
+                    {
+                        // 再向內縮一點點繪製高光
+                        float offset = 2.5f;
+                        g.TranslateTransform(offset, offset);
+                        // 稍微縮小比例繪製高光路徑，或簡單畫個 1px 的內框
+                        using (Pen innerPen = new Pen(Color.FromArgb(50, 255, 255, 255), 1))
+                        {
+                            // 這裡只畫外圍一圈
+                            g.DrawPath(innerPen, path);
+                        }
+                    }
+                }
+            }
+            return result;
         }
 
 
@@ -117,9 +183,9 @@ namespace LifeHelper
         }
         private void btnPlaylist_Click(object sender, EventArgs e)
         {
-            playListManager.ShowPlaylistForm(this,songList);
+            playListManager.ShowPlaylistForm(this, songList);
         }
-        
+
         private void btnRewind_Click(object sender, EventArgs e)
         {
             if (audioReader != null)
@@ -203,12 +269,12 @@ namespace LifeHelper
             {
                 Debug.WriteLine($"[PlayMusic] 開始初始化播放程序. URL 長度: {streamUrl?.Length ?? 0}");
 
-                
+
                 CleanupPlayback();
 
                 if (string.IsNullOrEmpty(streamUrl)) return;
 
-                
+
                 Debug.WriteLine("[PlayMusic] 正在建立 MediaFoundationReader...");
                 audioReader = new MediaFoundationReader(streamUrl);
 
@@ -254,7 +320,7 @@ namespace LifeHelper
                 if (!string.IsNullOrEmpty(newUrl))
                 {
                     this.streamUrl = newUrl;
-                    PlayMusic(TimeSpan.Zero); 
+                    PlayMusic(TimeSpan.Zero);
                     return;
                 }
             }
@@ -269,7 +335,7 @@ namespace LifeHelper
             if (waveOut != null)
             {
                 Debug.WriteLine("[Cleanup] 正在釋放 waveOut...");
-                waveOut.PlaybackStopped -= WaveOut_PlaybackStopped; 
+                waveOut.PlaybackStopped -= WaveOut_PlaybackStopped;
                 waveOut.Stop();
                 waveOut.Dispose();
                 waveOut = null;
@@ -306,13 +372,13 @@ namespace LifeHelper
 
                 try
                 {
-                    
+
                     await Task.Run(async () =>
                     {
                         var psi = new ProcessStartInfo
                         {
                             FileName = "yt-dlp.exe",
-                            
+
                             Arguments = $"-f 140/bestaudio[ext=m4a]/bestaudio --extract-audio --audio-format mp3 -o \"{tempPath}\" \"{url}\"",
                             UseShellExecute = false,
                             RedirectStandardOutput = true,
@@ -325,13 +391,13 @@ namespace LifeHelper
                         {
                             if (proc != null)
                             {
-                                
+
                                 await proc.WaitForExitAsync();
                             }
                         }
                     });
 
-                   
+
                     loader.Close();
 
                     streamUrl = tempPath;
@@ -339,7 +405,7 @@ namespace LifeHelper
                 }
                 catch (Exception ex)
                 {
-                    
+
                     loader.Close();
                     MessageBox.Show("下載本地檔案失敗：" + ex.Message, "錯誤");
                 }
@@ -356,12 +422,12 @@ namespace LifeHelper
             }
             catch { }
         }
-        
+
         public void UpdateCurrentIndex(int index)
         {
             if (index >= 0 && index < songList.Count)
             {
-                this.currentIndex = index; 
+                this.currentIndex = index;
                 Debug.WriteLine($"[Jump] 索引已更新為: {index}，歌曲: {songList[index].Title}");
             }
         }
@@ -378,10 +444,10 @@ namespace LifeHelper
             bool isRemoteStream = streamUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase);
 
             // 判斷是否為正常結束
-            if (audioReader != null && audioReader.Position >= (audioReader.Length - 1024)) 
+            if (audioReader != null && audioReader.Position >= (audioReader.Length - 1024))
             {
                 Debug.WriteLine("[Normal End] 歌曲播放完畢。");
-                isPlaying = false; 
+                isPlaying = false;
 
                 if (!isRemoteStream)
                 {
@@ -394,7 +460,7 @@ namespace LifeHelper
             }
 
             // 判斷是否為人為停止
-           
+
             if (!isPlaying) return;
             bool isAbnormal = (e.Exception != null) ||
                               (audioReader != null && audioReader.Position < audioReader.Length) ||
@@ -402,7 +468,7 @@ namespace LifeHelper
 
             if (isAbnormal)
             {
-                
+
                 if (!isRemoteStream)
                 {
                     Debug.WriteLine("本地檔案播放失敗跳過歌曲");
@@ -420,7 +486,7 @@ namespace LifeHelper
         //覆寫關閉邏輯
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            isClosingManually = true; 
+            isClosingManually = true;
             DeleteTempFile();
             if (waveOut != null)
             {
@@ -436,7 +502,7 @@ namespace LifeHelper
             base.OnFormClosing(e);
         }
 
-        
+
 
 
         // 其他字體處理方法
@@ -494,6 +560,28 @@ namespace LifeHelper
             return $"{min}:{sec:D2}";
         }
 
+        private void pictureBoxCover_Paint(object sender, PaintEventArgs e)
+        {
+            // 畫一個比圖片稍微大一點的深灰色圓角矩形作為底座
+            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            Rectangle rect = new Rectangle(0, 0, pictureBoxCover.Width - 1, pictureBoxCover.Height - 1);
+            int r = 22; // 稍微比圖片圓角大一點
+
+            using (System.Drawing.Drawing2D.GraphicsPath borderPath = new System.Drawing.Drawing2D.GraphicsPath())
+            {
+                borderPath.AddArc(rect.X, rect.Y, r, r, 180, 90);
+                borderPath.AddArc(rect.Right - r, rect.Y, r, r, 270, 90);
+                borderPath.AddArc(rect.Right - r, rect.Bottom - r, r, r, 0, 90);
+                borderPath.AddArc(rect.X, rect.Bottom - r, r, r, 90, 90);
+                borderPath.CloseAllFigures();
+
+                // 畫出一個明顯的實體外邊框 (深灰帶亮邊)
+                using (Pen p = new Pen(Color.FromArgb(100, 100, 100), 2))
+                {
+                    e.Graphics.DrawPath(p, borderPath);
+                }
+            }
+        }
     }
 
 }

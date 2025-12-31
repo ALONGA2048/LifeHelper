@@ -25,10 +25,14 @@ namespace LifeHelper
             
             materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
-            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
+            materialSkinManager.Theme = MaterialSkinManager.Themes.DARK; // 改為深色模式
             materialSkinManager.ColorScheme = new ColorScheme(
-            Primary.Indigo500, Primary.Indigo700,
-            Primary.Indigo100, Accent.Pink200, TextShade.WHITE);
+                Primary.Grey900,   // 主要背景 (更深)
+                Primary.Grey800,   // 次要背景
+                Primary.Grey500,   // 邊框/細節
+                Accent.Pink200,    // 強調色 (可保持 Pink 或改用綠色)
+                TextShade.WHITE    // 文字顏色
+            );
 
         }
         private void Form_Music_Load(object sender, EventArgs e)
