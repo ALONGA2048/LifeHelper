@@ -45,8 +45,8 @@ namespace LifeHelper
             isPlaying = false;
             CleanupPlayback();
 
-            string cleanedTitle = CleanTitle(info.Title, info.Artist); // 修正原本傳入 info.CoverUrl 的小 Bug
-            lblTitle.Text = GetTwoLineEllipsis(cleanedTitle, lblTitle.Font, lblTitle.Width);
+            
+            lblTitle.Text = GetTwoLineEllipsis(info.Title, lblTitle.Font, lblTitle.Width);
             lblArtist.Text = info.Artist;
             timeLabel.Text = $"0:00/{info.Duration}";
             this.streamUrl = info.StreamUrl;
@@ -379,7 +379,7 @@ namespace LifeHelper
                         {
                             FileName = "yt-dlp.exe",
 
-                            Arguments = $"-f 140/bestaudio[ext=m4a]/bestaudio --extract-audio --audio-format mp3 -o \"{tempPath}\" \"{url}\"",
+                            Arguments = $"-f 140/bestaudio[ext=m4a]/bestaudio --encoding utf-8 --extract-audio --audio-format mp3 -o \"{tempPath}\" \"{url}\"",
                             UseShellExecute = false,
                             RedirectStandardOutput = true,
                             RedirectStandardError = true,
@@ -502,34 +502,7 @@ namespace LifeHelper
             base.OnFormClosing(e);
         }
 
-
-
-
-        // 其他字體處理方法
-        private string CleanTitle(string title, string artist)
-        {
-            if (string.IsNullOrWhiteSpace(title))
-                return string.Empty;
-            string t = title.Trim();
-            if (!string.IsNullOrWhiteSpace(artist))
-            {
-                string a = artist.Trim();
-                t = t.Replace(a, "", StringComparison.OrdinalIgnoreCase);
-            }
-            // 移除特殊符號
-            t = t.Replace("-", " ")
-                 .Replace("–", " ")
-                 .Replace("—", " ")
-                 .Replace(":", " ")
-                 .Replace("：", " ")
-                 .Replace("|", " ")
-                 .Replace("｜", " ")
-                 .Replace("[", " ")
-                 .Replace("]", " ");
-            // 合併多個空白為一個
-            t = System.Text.RegularExpressions.Regex.Replace(t, "\\s+", " ");
-            return t.Trim();
-        }
+        
 
         private string GetTwoLineEllipsis(string text, Font font, int labelWidth)
         {

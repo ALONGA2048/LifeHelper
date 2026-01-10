@@ -26,3 +26,5 @@ temp.mp3
 Thumbs.db
 Desktop.ini
 .DS_Store
+##[發布資料夾]
+Properties/

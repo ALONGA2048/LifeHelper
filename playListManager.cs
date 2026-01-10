@@ -410,7 +410,7 @@ namespace LifeHelper
                                 var psi = new ProcessStartInfo
                                 {
                                     FileName = "yt-dlp.exe",
-                                    Arguments = $"-x --audio-format mp3 -o \"{outputPath}\" \"{entry.Key}\"",
+                                    Arguments = $"-x --audio-format mp3 --encoding utf-8 -o \"{outputPath}\" \"{entry.Key}\"",
                                     UseShellExecute = false,
                                     CreateNoWindow = true
                                 };
@@ -441,7 +441,7 @@ namespace LifeHelper
                 playlistForm.Close();
                
                 
-
+                allsongList.Clear();
                 ui.Update(0, "準備中...", "0%");
 
                 int i = 0;

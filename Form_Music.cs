@@ -63,7 +63,7 @@ namespace LifeHelper
                 process.StartInfo = new ProcessStartInfo
                 {
                     FileName = "yt-dlp.exe",
-                    Arguments = $"-f \"140/bestaudio[ext=m4a]/bestaudio\" {itemArg}--print {printTemplate} --no-warning \"{url}\"",
+                    Arguments = $"-f \"140/bestaudio[ext=m4a]/bestaudio\" --encoding utf-8 {itemArg}--print {printTemplate} --no-warning \"{url}\"",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
@@ -240,9 +240,10 @@ namespace LifeHelper
                             var psi = new ProcessStartInfo
                             {
                                 FileName = "yt-dlp.exe",
-                                Arguments = $"-x --audio-format mp3 --playlist-items {i} -o \"{outputPath}\" \"{url}\"",
+                                Arguments = $"-x --audio-format mp3 --encoding utf-8 --playlist-items {i} -o \"{outputPath}\" \"{url}\"",
                                 CreateNoWindow = true,
-                                UseShellExecute = false
+                                UseShellExecute = false,
+                                StandardOutputEncoding = Encoding.UTF8,
                             };
                             Process.Start(psi).WaitForExit();
                         });
@@ -267,7 +268,7 @@ namespace LifeHelper
                     {
                         FileName = "yt-dlp.exe",
 
-                        Arguments = $"-x --audio-format mp3 -o \"{outputPath}\" \"{url}\"",
+                        Arguments = $"-x --audio-format --encoding utf-8 mp3 -o \"{outputPath}\" \"{url}\"",
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
@@ -396,7 +397,7 @@ namespace LifeHelper
                     StartInfo = new ProcessStartInfo
                     {
                         FileName = "yt-dlp.exe",
-                        Arguments = $"--flat-playlist --playlist-items 1 --print \"%(playlist_count)s\" --no-warning \"{url}\"",
+                        Arguments = $"--flat-playlist --encoding utf-8 --playlist-items 1 --print \"%(playlist_count)s\" --no-warning \"{url}\"",
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
