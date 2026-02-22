@@ -35,12 +35,48 @@ namespace LifeHelper
             );
 
         }
-        private void Form_Music_Load(object sender, EventArgs e)
+
+        // 初始下載依賴
+        private async Task InitializeDependenciesAsync()
+        {
+            // 先禁用控制項
+            btnPlay.Enabled = false;
+            materialRadioButton1.Enabled = false;
+            materialRadioButton2.Enabled = false;
+            txtYoutubeUrl.Enabled = false;
+
+            
+            await DependencyManager.CheckAndUpdateAsync(message =>
+            {
+                // ui更新標籤
+                this.Invoke(new Action(() => {
+                    label1.Text = message;
+                }));
+            });
+
+            //檢查完成後開放
+            await Task.Delay(1500);
+            this.Invoke(new Action(() => {
+                label1.Text = "請輸入網址開始使用";
+
+                // 恢復控制項
+                 btnPlay.Enabled = true;
+                 materialRadioButton1.Enabled = true;
+                 materialRadioButton2.Enabled = true;
+                 txtYoutubeUrl.Enabled = true;
+            }));
+        }
+
+
+        private async void Form_Music_Load(object sender, EventArgs e)
         {
             label1.Font = new Font("Microsoft JhengHei UI", 9F, FontStyle.Regular);
             label2.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Bold);
+            txtYoutubeUrl.Font = new Font("Microsoft JhengHei UI", 12F, FontStyle.Regular);
             InitPlaylistDrawer();
+            await InitializeDependenciesAsync();
         }
+        
 
 
 
@@ -243,7 +279,7 @@ namespace LifeHelper
                                 Arguments = $"-x --audio-format mp3 --encoding utf-8 --playlist-items {i} -o \"{outputPath}\" \"{url}\"",
                                 CreateNoWindow = true,
                                 UseShellExecute = false,
-                                StandardOutputEncoding = Encoding.UTF8,
+                                
                             };
                             Process.Start(psi).WaitForExit();
                         });
@@ -268,12 +304,12 @@ namespace LifeHelper
                     {
                         FileName = "yt-dlp.exe",
 
-                        Arguments = $"-x --audio-format --encoding utf-8 mp3 -o \"{outputPath}\" \"{url}\"",
+                        Arguments = $"-x --audio-format mp3 --encoding utf-8  -o \"{outputPath}\" \"{url}\"",
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
                         CreateNoWindow = true,
-                        StandardOutputEncoding = Encoding.UTF8
+                       
                     }
                 };
 
@@ -281,6 +317,7 @@ namespace LifeHelper
 
                 process.WaitForExit();
             });
+            MessageBox.Show($"歌曲下載完成！儲存於：{outputPath}");
         }
 
 
