@@ -30,13 +30,14 @@
             btnRewind = new Button();
             btnForward = new Button();
             playbackTimer = new System.Windows.Forms.Timer(components);
+            volume = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxCover).BeginInit();
             SuspendLayout();
             // 
             // pictureBoxCover
             // 
             pictureBoxCover.BackColor = Color.FromArgb(30, 30, 30);
-            pictureBoxCover.Location = new Point(35, 70);
+            pictureBoxCover.Location = new Point(35, 82);
             pictureBoxCover.Name = "pictureBoxCover";
             pictureBoxCover.Size = new Size(380, 214);
             pictureBoxCover.SizeMode = PictureBoxSizeMode.Zoom;
@@ -46,7 +47,7 @@
             // 
             // progressBar
             // 
-            progressBar.Location = new Point(45, 438);
+            progressBar.Location = new Point(45, 450);
             progressBar.Name = "progressBar";
             progressBar.Size = new Size(360, 4);
             progressBar.TabIndex = 4;
@@ -63,7 +64,7 @@
             btnPrev.FlatStyle = FlatStyle.Flat;
             btnPrev.Font = new Font("Segoe UI Symbol", 20F);
             btnPrev.ForeColor = Color.White;
-            btnPrev.Location = new Point(125, 490);
+            btnPrev.Location = new Point(125, 502);
             btnPrev.Name = "btnPrev";
             btnPrev.Size = new Size(55, 55);
             btnPrev.TabIndex = 6;
@@ -80,7 +81,7 @@
             btnPlayPause.FlatStyle = FlatStyle.Flat;
             btnPlayPause.Font = new Font("Segoe UI Symbol", 28F);
             btnPlayPause.ForeColor = Color.White;
-            btnPlayPause.Location = new Point(185, 475);
+            btnPlayPause.Location = new Point(185, 487);
             btnPlayPause.Name = "btnPlayPause";
             btnPlayPause.Size = new Size(80, 80);
             btnPlayPause.TabIndex = 7;
@@ -97,7 +98,7 @@
             btnNext.FlatStyle = FlatStyle.Flat;
             btnNext.Font = new Font("Segoe UI Symbol", 20F);
             btnNext.ForeColor = Color.White;
-            btnNext.Location = new Point(270, 490);
+            btnNext.Location = new Point(270, 502);
             btnNext.Name = "btnNext";
             btnNext.Size = new Size(55, 55);
             btnNext.TabIndex = 8;
@@ -110,7 +111,7 @@
             lblTitle.AutoEllipsis = true;
             lblTitle.Font = new Font("Microsoft JhengHei UI", 18F, FontStyle.Bold);
             lblTitle.ForeColor = Color.White;
-            lblTitle.Location = new Point(25, 310);
+            lblTitle.Location = new Point(25, 322);
             lblTitle.Name = "lblTitle";
             lblTitle.Size = new Size(400, 45);
             lblTitle.TabIndex = 1;
@@ -121,7 +122,7 @@
             // 
             lblArtist.Font = new Font("Microsoft JhengHei UI", 11F);
             lblArtist.ForeColor = Color.DarkGray;
-            lblArtist.Location = new Point(25, 355);
+            lblArtist.Location = new Point(25, 367);
             lblArtist.Name = "lblArtist";
             lblArtist.Size = new Size(400, 30);
             lblArtist.TabIndex = 2;
@@ -144,7 +145,7 @@
             // 
             timeLabel.Font = new Font("Consolas", 10F);
             timeLabel.ForeColor = Color.Gray;
-            timeLabel.Location = new Point(45, 410);
+            timeLabel.Location = new Point(45, 422);
             timeLabel.Name = "timeLabel";
             timeLabel.Size = new Size(360, 25);
             timeLabel.TabIndex = 3;
@@ -158,7 +159,7 @@
             btnRewind.FlatStyle = FlatStyle.Flat;
             btnRewind.Font = new Font("Segoe UI Symbol", 14F);
             btnRewind.ForeColor = Color.Gray;
-            btnRewind.Location = new Point(70, 495);
+            btnRewind.Location = new Point(70, 507);
             btnRewind.Name = "btnRewind";
             btnRewind.Size = new Size(50, 50);
             btnRewind.TabIndex = 5;
@@ -173,7 +174,7 @@
             btnForward.FlatStyle = FlatStyle.Flat;
             btnForward.Font = new Font("Segoe UI Symbol", 14F);
             btnForward.ForeColor = Color.Gray;
-            btnForward.Location = new Point(330, 495);
+            btnForward.Location = new Point(330, 507);
             btnForward.Name = "btnForward";
             btnForward.Size = new Size(50, 50);
             btnForward.TabIndex = 9;
@@ -186,10 +187,28 @@
             playbackTimer.Interval = 500;
             playbackTimer.Tick += playbackTimer_Tick;
             // 
+            // volume
+            // 
+            volume.BackColor = Color.Transparent;
+            volume.Cursor = Cursors.Hand;
+            volume.FlatAppearance.BorderSize = 0;
+            volume.FlatAppearance.MouseOverBackColor = Color.FromArgb(60, 60, 60);
+            volume.FlatStyle = FlatStyle.Flat;
+            volume.Font = new Font("Segoe UI Symbol", 28F);
+            volume.ForeColor = Color.White;
+            volume.Location = new Point(386, 493);
+            volume.Name = "volume";
+            volume.Size = new Size(39, 60);
+            volume.TabIndex = 10;
+            volume.Text = "🔊";
+            volume.UseVisualStyleBackColor = false;
+            volume.Click += volume_Click;
+            // 
             // Form_Music_player
             // 
             BackColor = Color.FromArgb(18, 18, 18);
             ClientSize = new Size(450, 600);
+            Controls.Add(volume);
             Controls.Add(btnPlaylist);
             Controls.Add(pictureBoxCover);
             Controls.Add(lblTitle);
@@ -224,5 +243,6 @@
         private System.Windows.Forms.Button btnRewind;
         private System.Windows.Forms.Button btnForward;
         private System.Windows.Forms.Timer playbackTimer;
+        private Button volume;
     }
 }

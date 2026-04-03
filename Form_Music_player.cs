@@ -24,6 +24,11 @@ namespace LifeHelper
         public List<SongInfo> songList = new List<SongInfo>();
         private int currentIndex = 0;
 
+        // 音量版面
+        private Panel volumePanel;
+        private TrackBar volumeSlider;
+        private float currentVolume = 0.5f; 
+
         /// <summary>
         /// 撥放器建立邏輯
         /// </summary>
@@ -32,11 +37,24 @@ namespace LifeHelper
         public Form_Music_player(List<SongInfo> songs, int startIndex = 0)
         {
             InitializeComponent();
+            InitVolumeControl();
+            this.MouseDown += (s, e) => HideVolumePanel();
+            pictureBoxCover.MouseDown += (s, e) => HideVolumePanel();
+
+            lblTitle.MouseDown += (s, e) => HideVolumePanel();
+            lblArtist.MouseDown += (s, e) => HideVolumePanel();
             songList = songs ?? new List<SongInfo>();
             currentIndex = startIndex >= 0 && startIndex < songList.Count ? startIndex : 0;
             if (songList.Count > 0)
             {
                 SetMusicInfo(songList[currentIndex]);
+            }
+        }
+        private void HideVolumePanel()
+        {
+            if (volumePanel != null && volumePanel.Visible)
+            {
+                volumePanel.Visible = false;
             }
         }
 
@@ -45,7 +63,7 @@ namespace LifeHelper
             isPlaying = false;
             CleanupPlayback();
 
-            
+
             lblTitle.Text = GetTwoLineEllipsis(info.Title, lblTitle.Font, lblTitle.Width);
             lblArtist.Text = info.Artist;
             timeLabel.Text = $"0:00/{info.Duration}";
@@ -77,6 +95,54 @@ namespace LifeHelper
             }
 
             PlayMusic();
+        }
+
+        // 音量版面設定
+        private void InitVolumeControl()
+        {
+            
+            volumePanel = new Panel();
+            volumePanel.Size = new Size(40, 150);
+            volumePanel.BackColor = Color.FromArgb(30, 30, 30); 
+            volumePanel.BorderStyle = BorderStyle.FixedSingle;
+            volumePanel.Visible = false; 
+
+            
+            volumeSlider = new TrackBar();
+            volumeSlider.Orientation = Orientation.Vertical; 
+            volumeSlider.Dock = DockStyle.Fill;
+            volumeSlider.Minimum = 0;
+            volumeSlider.Maximum = 100;
+            volumeSlider.Value = (int)(currentVolume * 100);
+            volumeSlider.TickStyle = TickStyle.None;
+            volumeSlider.BackColor = Color.FromArgb(30, 30, 30);
+
+           
+            volumeSlider.Scroll += (s, e) =>
+            {
+                currentVolume = volumeSlider.Value / 100f;
+                if (waveOut != null)
+                {
+                    waveOut.Volume = currentVolume; 
+                }
+            };
+            volumeSlider.LostFocus += (s, e) =>
+            {
+                
+                Point mousePos = volume.PointToClient(Control.MousePosition);
+                if (!volume.ClientRectangle.Contains(mousePos))
+                {
+                    volumePanel.Visible = false;
+                }
+            };
+            
+            volumePanel.Controls.Add(volumeSlider);
+            this.Controls.Add(volumePanel);
+
+           
+            volumePanel.BringToFront();
+
+            
         }
 
         /// <summary>
@@ -282,7 +348,7 @@ namespace LifeHelper
 
                 waveOut = new WaveOutEvent();
                 waveOut.Init(audioReader);
-
+                waveOut.Volume = currentVolume; // 音量一致
                 if (resume.HasValue && resume.Value.TotalSeconds > 0)
                 {
                     Debug.WriteLine($"[PlayMusic] 設定續播時間點: {resume.Value.TotalSeconds}");
@@ -502,7 +568,7 @@ namespace LifeHelper
             base.OnFormClosing(e);
         }
 
-        
+
 
         private string GetTwoLineEllipsis(string text, Font font, int labelWidth)
         {
@@ -555,6 +621,26 @@ namespace LifeHelper
                 }
             }
         }
+        protected override void OnDeactivate(EventArgs e)
+        {
+            base.OnDeactivate(e);
+            if (volumePanel != null) volumePanel.Visible = false;
+        }
+        private void volume_Click(object sender, EventArgs e)
+        {
+            // 直接反向切換顯示狀態
+            volumePanel.Visible = !volumePanel.Visible;
+
+            if (volumePanel.Visible)
+            {
+                // 定位：放在按鈕上方
+                volumePanel.Location = new Point(volume.Left, volume.Top - volumePanel.Height - 5);
+                volumePanel.BringToFront();
+                volumeSlider.Focus(); // 取得焦點，這樣點擊其他地方才會觸發 LostFocus
+            }
+        }
     }
+
+
 
 }
